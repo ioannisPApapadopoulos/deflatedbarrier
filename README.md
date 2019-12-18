@@ -15,9 +15,13 @@ The code is written in Python using FEniCS: a finite element solver platform. In
 The deflated-barrier library also depends on
 
 petsc4py (https://bitbucket.org/petsc/petsc4py)
+
 h5py (http://www.h5py.org/)
+
 matplotlib (http://matplotlib.org, for rendering bifurcation diagrams)
+
 mshr (https://bitbucket.org/fenics-project/mshr)
+
 slepc4py (https://bitbucket.org/slepc/slepc4py, for computing stabilities)
 
 ### Code examples ###
@@ -26,9 +30,14 @@ The easiest way to learn how to use it is to examine the examples in examples/. 
 
 ### Installation ###
 
+	pip3 install .
+	
+	pip3 install -e .
+
 ### Contributors ###
 
 Ioannis P. A. Papadopoulos (ioannis.papadopoulos@maths.ox.ac.uk)
+
 Patrick E. Farrell (patrick.farrell@maths.ox.ac.uk)
 
 
