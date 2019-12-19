@@ -90,8 +90,8 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
         branch_deflate = branch_deflate_start
 
         solutionpath_string = ("output/mu-%.3e-params-%s-mesh-%1.2f" %(float(mu),params,hmin))
-
         pvd = File("%s/solutions.pvd" %solutionpath_string)
+
         max_solutions = problem.number_solutions(mu, params)
         # which branches to run through
         branch_iter = 0
@@ -111,7 +111,7 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
                                                       max_solutions, Max_solutions, halfmu, num_halfstep, max_halfstep, Log)
 
 
-             (branch_iter, mu, oldmu, oldguesses, Log, found_solutions,
+             (branch_iter, branch_deflate, mu, oldmu, oldguesses, Log, found_solutions,
              deflation, halfmu, num_halfstep, max_solutions, guesses, task) = outputarg
 
 
@@ -132,7 +132,7 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
                                 task, num_halfstep, max_halfstep,
                                 hint_guess, hint,
                                 FcnSpace, params, u, problem,
-                                oldmu, mu, iter_subproblem, Log)
+                                oldmu, mu, halfmu, iter_subproblem, Log)
 
         (oldguesses, hint, oldmu, mu, num_halfstep) = newparams
 
@@ -235,10 +235,10 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
                                          max_solutions, Max_solutions, halfmu, num_halfstep,max_halfstep, Log):
 
     def outputargs():
-        return (branch_iter, mu, oldmu, oldguesses, Log, found_solutions, deflation, halfmu, num_halfstep, max_solutions, guesses, task)
+        return (branch_iter, branch_deflate, mu, oldmu, oldguesses, Log, found_solutions,
+                deflation, halfmu, num_halfstep, max_solutions, guesses, task)
 
     branch = branches[branch_iter]
-
 
     # the bounds that are passed to the solver
     vi = problem.bounds_vi(FcnSpace, mu, params)
@@ -365,12 +365,11 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
             if num_halfstep < max_halfstep:
                 # if continuation has failed, half mu stepsize
                 halfmu.assign(mu)
-                print("oldmu value")
-                print(float(oldmu))
                 mu.assign(0.5*(float(mu)+float(oldmu)))
                 info_red("%s for branch %s has failed, halfing stepsize in mu, considering mu = %s" %(task,branch, float(mu)))
                 branch_deflate = 0
                 num_halfstep += 1
+                branch_iter = Max_solutions # to break the while loop
                 task = "HalfstepsizeTask"
                 package = outputargs()
                 return package
@@ -383,10 +382,8 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
 
         elif task == 'DeflationTask':
             # if deflation failed, use a different branch as an initial guess
-            # keep track of failed iterations too
-            Log["num_snes_its_defl"][branch].append(its)
-            branch_deflate +=1
 
+            branch_deflate +=1
             found_solutions[branch] = 0
             try:
                 if branch_deflate == branch: branch_deflate +=1 # should not use one's own branch as an initial guess in deflation
@@ -401,11 +398,9 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
                         package = outputargs()
                         return package
                 branch_deflate = branch_deflate_start
-
         if sum(found_solutions) == 0:
             package = outputargs()
             return package
-
 
     return outputargs()
 
@@ -413,7 +408,7 @@ def UpdateSubproblemParams(oldguesses, guesses, Max_solutions,
                         task, num_halfstep, max_halfstep,
                         hint_guess, hint,
                         FcnSpace, params, u, problem,
-                        oldmu, mu, iter_subproblem, Log):
+                        oldmu, mu, halfmu, iter_subproblem, Log):
 
     def outputargs():
         return (oldguesses, hint, oldmu, mu, num_halfstep)
