@@ -5,7 +5,7 @@ from .deflation import newton
 from .compatibility import make_comm
 from .misc import create_output_folder, inertia_switch, report_profile, MorYos
 from .visolvers import BensonMunson, HintermullerItoKunisch, ProjectedNewton
-from .mg import create_dm
+# from .mg import create_dm # Can crash with depending on Ubuntu version
 from mpi4py import MPI
 from copy import deepcopy
 import os
@@ -173,8 +173,8 @@ def FEMsetup(comm, problem, mu_start):
     dolfin_comm = make_comm(comm)
     mesh = problem.mesh(comm=dolfin_comm)
     FcnSpace = problem.function_space(mesh)
-    dm = create_dm(FcnSpace, problem)
-    # dm = None
+    # dm = create_dm(FcnSpace, problem)
+    dm = None
     return (mu, dolfin_comm, mesh, FcnSpace, dm)
 
 def extractguesses(problem, initialstring, FcnSpace, params, dolfin_comm):

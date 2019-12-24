@@ -3,7 +3,7 @@ from dolfin import *
 from .deflation import newton
 from .compatibility import make_comm
 from .drivers import visolver, deflatedbarrier
-from .mg import create_dm
+# from .mg import create_dm # Can crash with depending on Ubuntu version
 from .mlogging import *
 from mpi4py import MPI
 import os
@@ -14,8 +14,8 @@ import shutil
 
 def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfile = None,
                    initialpathfile = None, comm=MPI.COMM_WORLD,
-                   mu_start_refine = 0.0, mu_start_continuation = 0.0, eps_end = 5e-3,
-                   iters_total = 1, parameter_update = None,
+                   mu_start_refine = 0.0, mu_start_continuation = 0.0, param_end = 5e-3,
+                   iters_total = 20, parameter_update = None,
                    grid_refinement = 10, parameter_continuation = True):
 
 
@@ -49,7 +49,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
 
         iters = 0
         gr = 1
-        while (epsilon > eps_end) and (iters < iters_total):
+        while (epsilon > param_end) and (iters < iters_total):
             # shutil.rmtree(pathfile +"/tmp", ignore_errors=True)
             if gr <= grid_refinement:
                 mesh_ = interface_refine(z, mesh)
@@ -77,7 +77,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
             if parameter_continuation == True:
                 if parameter_update == None:
                     raise("Require rules for update in continuation parameter")
-                epsilon = parameter_update(z_, epsilon)
+                epsilon = parameter_update(epsilon, z_)
                 params[sharpness_coefficient] = epsilon
                 info_blue(r"Solve for new sharpness coefficient = %s for branch %s"%(epsilon, branch))
                 exists = os.path.isfile(tmppathfile +"/%s.xml.gz"%branch)
@@ -99,7 +99,8 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
 
 def requirements(mesh, problem, mu, branch, params):
     Z = problem.function_space(mesh)
-    dm = create_dm(Z, problem)
+    # dm = create_dm(Z, problem)
+    dm = None
     z = Function(Z, name = "Solution")
     v = TestFunction(Z)
     w = TestFunction(Z)

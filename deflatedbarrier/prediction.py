@@ -4,6 +4,7 @@ from .deflation import *
 from .mlogging import *
 import numpy as np
 from copy import deepcopy
+from .visolvers import BensonMunson
 
 def feasibletangent(problem, solution, v, w, oldmu, newmu, k, params, task, vi, hint=None):
 
@@ -116,7 +117,7 @@ def tangent(problem, solution, v, w, oldmu, newmu, k, params, task, vi, hint=Non
     # FIXME: there's probably a more elegant way to do this.
     # Or should we use one semismooth Newton step? After all
     # we already have a Newton linearisation.
-    newproblem = VInewtonrsls(problem)
+    newproblem = BensonMunson(problem)
     sp = problem.solver_parameters(float(oldmu), 0, task, params)
     (success, iters, liters) = newton(G, J, du, dubcs,
                               newproblem.solver,

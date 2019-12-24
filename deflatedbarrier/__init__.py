@@ -10,4 +10,4 @@ from .nonlinearproblem import *
 from .prediction import *
 from .misc import plus
 from .visolvers import *
-from .mg import *
+# from .mg import * # Can crash depending on Ubuntu version

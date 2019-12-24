@@ -27,16 +27,20 @@ class SNUFLSolver(object):
         opts = PETSc.Options()
         if "snes_linesearch_type" not in solver_parameters:
             opts[prefix + "snes_linesearch_type"] = "basic"
-        if "snes_divergence_tolerance" not in solver_parameters:
-            opts[prefix + "snes_divergence_tolerance"] = -1
+        # if "snes_divergence_tolerance" not in solver_parameters:
+        #     opts[prefix + "snes_divergence_tolerance"] = -1
         if "snes_stol" not in solver_parameters:
             opts[prefix + "snes_stol"] = 0.0
+
+        # No backwards compatibility in PETSc
         if float(platform.linux_distribution()[1])> 19:
             if "pc_factor_mat_solver_package" in solver_parameters:
                 opts[prefix + "pc_factor_mat_solver_type"] = solver_parameters["pc_factor_mat_solver_package"]
+                del solver_parameters["pc_factor_mat_solver_package"]
         else:
             if "pc_factor_mat_solver_type" in solver_parameters:
                 opts[prefix + "pc_factor_mat_solver_package"] = solver_parameters["pc_factor_mat_solver_type"]
+                del solver_parameters["pc_factor_mat_solver_type"]
 
         # set the petsc options from the solver_parameters
         for k in solver_parameters:

@@ -5,10 +5,7 @@ from .nonlinearsolver import *
 from .nonlinearproblem import *
 from .misc import *
 from .prediction import *
-from functools import partial
-import os
-import resource
-import gc
+import platform
 
 # File containing the PrimalInteriorPoint and PrimalDualInteriorPoint classes
 
@@ -114,7 +111,10 @@ class PrimalInteriorPoint(object):
         pc = PETSc.PC().create(comm)
         pc.setOperators(A.mat())
         pc.setType("cholesky")
-        pc.setFactorSolverPackage("mumps")
+        if float(platform.linux_distribution()[1]) > 19:
+            pc.setFactorSolverType("mumps")
+        else:
+            pc.setFactorSolverPackage("mumps")
         pc.setUp()
 
         Factor = pc.getFactorMatrix()
@@ -207,7 +207,7 @@ class PrimalDualInteriorPoint(object):
         rho_ = z.split(deepcopy=True)[0]
         rho_.rename("Control", "Control")
         pvd << rho_
-        
+
     def save_solution(self, mesh, z, mu, params, branch):
         comm = mesh.mpi_comm()
         hmin = mesh.hmin()
@@ -254,7 +254,10 @@ class PrimalDualInteriorPoint(object):
         pc = PETSc.PC().create(comm)
         pc.setOperators(A.mat())
         pc.setType("cholesky")
-        pc.setFactorSolverPackage("mumps")
+        if float(platform.linux_distribution()[1]) > 19:
+            pc.setFactorSolverType("mumps")
+        else:
+            pc.setFactorSolverPackage("mumps")
         pc.setUp()
 
         Factor = pc.getFactorMatrix()
