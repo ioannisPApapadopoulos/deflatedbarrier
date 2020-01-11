@@ -34,7 +34,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
         initialstring = pathfile + "/tmp/%s.xml.gz"%(branch)
         tmppathfile = pathfile + "/tmp"
         (F,J,bcs,sp,vi,dm,z,v,w) = requirements(mesh, gsproblem, mu, branch, params)
-        h5 = HDF5File(dolfin_comm, initialpathfile + "/mu-%.3e-params-%s-mesh-%1.2f/%s.xml.gz" % (float(mu), params,mesh.hmin(),branch), "r")
+        h5 = HDF5File(dolfin_comm, initialpathfile + "/mu-%.3e-params-%s-hmin-%.3e/%s.xml.gz" % (float(mu), params,mesh.hmin(),branch), "r")
         h5.read(z, "/guess"); del h5
 
         epsilon = params[sharpness_coefficient]
@@ -42,7 +42,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
         info_blue(r"Checking solution to initial grid for branch %s, sharpness coefficient = %s"%(branch,epsilon))
         (success,_,_) = newton(F, J, z, bcs, problem.solver,params, sp, None, None, dm, vi)
         if success:
-            problem.save_pvd(pvd, z)
+            save_pvd(pvd, z, mu)
         else:
             info_red(r"Solution not found")
             break
@@ -70,8 +70,8 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
                 exists = os.path.isfile(tmppathfile +"/%s.xml.gz"%branch)
                 if exists: os.remove(tmppathfile +"/%s.xml.gz"%branch)
                 problem.save_solution(mesh_,z_,mu,params,0,branch,tmppathfile)
-                [[z_],_] = deflatedbarrier(gsproblem, params, mu_start=mu_start_refine, mu_end = 1e-10, max_halfstep = 0, initialstring = initialstring)
-                problem.save_pvd(pvd, z_)
+                ([z_],_) = deflatedbarrier(gsproblem, params, mu_start=mu_start_refine, mu_end = 1e-10, max_halfstep = 0, initialstring = initialstring)
+                save_pvd(pvd, z_, mu)
             # newton(F, J, z_, bcs, params, sp, None, None, None, vi)
 
             if parameter_continuation == True:
@@ -83,11 +83,11 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
                 exists = os.path.isfile(tmppathfile +"/%s.xml.gz"%branch)
                 if exists: os.remove(tmppathfile +"/%s.xml.gz"%branch)
                 problem.save_solution(mesh_,z_,mu,params,0,branch,tmppathfile)
-                [[z_],_] = deflatedbarrier(gsproblem, params, mu_start=mu_start_continuation, mu_end = 1e-10, max_halfstep = 0, initialstring = initialstring)
+                ([z_],_) = deflatedbarrier(gsproblem, params, mu_start=mu_start_continuation, mu_end = 1e-10, max_halfstep = 0, initialstring = initialstring)
 
             z = z_
             mesh = mesh_
-            problem.save_pvd(pvd, z)
+            save_pvd(pvd, z, mu)
             problem.save_solution(mesh,z,mu,params,0,branch,pathfile+"/cont-%s/branch-%s/iter-%s"%(epsilon,branch,iters))
             File(comm,pathfile+"/cont-%s/branch-%s/iter-%s/mesh.xml"%(epsilon, branch,iters)) << mesh
             iters += 1
@@ -127,6 +127,12 @@ def interface_refine(z, mesh):
 
     return mesh
 
+def save_pvd(pvd, z, mu):
+    rho_ = z.split(deepcopy=True)[0]
+    rho_.rename("Control", "Control")
+    pvd << rho_
+
+
 def prolong(z,z_):
     subz  = z.split(deepcopy=True)
     subz_ = z_.split(deepcopy=True)
@@ -149,9 +155,9 @@ class GridSequenceProblem(object):
         self.problem = problem
     def mesh(self, comm):
         return self.mesh_
-    def save_solution(self, mesh, z, mu, params, iter_subproblem, branch):
+    def save_solution(self, mesh, z, mu, params, iter_subproblem, branch, pathfile):
         pass
-    def save_pvd(self, pvd, u):
+    def save_pvd(self, pvd, u, mu):
         pass
     def number_solutions(self, mu, params):
         return 1

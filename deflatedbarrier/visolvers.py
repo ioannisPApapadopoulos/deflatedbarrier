@@ -7,7 +7,6 @@ from petsc4py import PETSc
 from numpy import where, array, int32
 from ufl import diag
 import numpy as np
-import platform
 
 def vec(x):
     if isinstance(x, Function):
@@ -35,7 +34,8 @@ class HintermullerItoKunisch(object):
         return getattr(self.problem, name)
 
     def solver(self, problem, base, params, solver_params, prefix="", vi = None, **kwargs):
-        # base = self.problem.solver(problem, params, solver_params, prefix=prefix, **kwargs)
+        if PETSc.Sys.getVersion()[0:2] < (3, 10):
+            raise("This PETSc version has a bug where the linesearch is incorrectly implemented. Use PETSc version >= 3.10")
         snes = base.snes
         mesh = problem.u.function_space().mesh()
         comm = mesh.mpi_comm()
@@ -163,10 +163,7 @@ class HintermullerItoKunisch(object):
                 ksp.setOperators(M_inact)
                 ksp.setType("preonly")
                 ksp.pc.setType("lu")
-                if float(platform.linux_distribution()[1])> 19:
-                    ksp.pc.setFactorSolverType("mumps")
-                else:
-                    ksp.pc.setFactorSolverPackage("mumps")
+                ksp.pc.setFactorSolverType("mumps")
                 ksp.setFromOptions()
                 ksp.setUp()
                 ksp.solve(rhs, dz_inactive)

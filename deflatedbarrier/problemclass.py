@@ -58,17 +58,16 @@ class PrimalInteriorPoint(object):
     def solver_parameters(self, mu, branch, task, params):
         raise NotImplementedError
 
-    def save_pvd(self, pvd, z):
-        rho_ = z.split(deepcopy=True)[0]
-        rho_.rename("Control", "Control")
-        pvd << rho_
+    def save_pvd(self, pvd, z, mu):
+        if float(mu) == 0.0:
+            rho_ = z.split(deepcopy=True)[0]
+            rho_.rename("Control", "Control")
+            pvd << rho_
 
 
-    def save_solution(self, mesh, z, mu, params, k, branch, pathfile = None):
+    def save_solution(self, mesh, z, mu, params, k, branch, pathfile):
         comm = mesh.mpi_comm()
         hmin = mesh.hmin()
-        if pathfile == None:
-            pathfile = "output/mu-%.3e-params-%s-mesh-%1.2f"%(float(mu),params, hmin)
         h5 = HDF5File(comm,pathfile + "/%s.xml.gz" %branch, "w")
         h5.write(z, "/guess")
         del h5
@@ -140,7 +139,7 @@ class PrimalInteriorPoint(object):
     def cost(self, z, params):
         return assemble(self.lagrangian(self, z, params))
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         raise NotImplementedError
 
 class PrimalDualInteriorPoint(object):
@@ -203,17 +202,19 @@ class PrimalDualInteriorPoint(object):
     def solver_parameters(self, mu, branch, task, params):
         raise NotImplementedError
 
-    def save_pvd(self, pvd, z):
-        rho_ = z.split(deepcopy=True)[0]
-        rho_.rename("Control", "Control")
-        pvd << rho_
+    def save_pvd(self, pvd, z, mu):
+        if float(mu) == 0.0:
+            rho_ = z.split(deepcopy=True)[0]
+            rho_.rename("Control", "Control")
+            pvd << rho_
 
-    def save_solution(self, mesh, z, mu, params, branch):
+    def save_solution(self, mesh, z, mu, params, k, branch, pathfile):
         comm = mesh.mpi_comm()
         hmin = mesh.hmin()
-        h5 = HDF5File(comm,"output/mu-%.3f-params-%-mesh-%1.2f/%s.xml.gz"%(float(mu),params,branch, hmin), "w")
+        h5 = HDF5File(comm,pathfile + "/%s.xml.gz" %branch, "w")
         h5.write(z, "/guess")
         del h5
+        return
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):
         # rules of IPOPT DOI: 10.1007/s10107-004-0559-y
@@ -280,7 +281,7 @@ class PrimalDualInteriorPoint(object):
     def solver(problem, base, params, solver_params, prefix="", vi = None, dm=None):
         return base
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         raise NotImplementedError
 
     def cost(self, z, params):

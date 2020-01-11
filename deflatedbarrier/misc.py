@@ -46,6 +46,7 @@ def inertia_switch(inertia, inertia_old, max_solutions, Max_solutions, branches,
 
 def report_profile(Log, Max_solutions):
 
+    out = []
     print("-" * 80)
     print("| Profiling statistics collected" + " "*35 + "|")
     print("-" * 80)
@@ -69,3 +70,9 @@ def report_profile(Log, Max_solutions):
         print("     Deflation iterations:         %s" %defl)
         print("     Prediction iterations:        %s" %pred)
         print()
+        out.append("%d"%cont)
+        out.append("%d"%defl)
+        out.append("%d"%pred)
+
+    out = np.array([out])
+    return out

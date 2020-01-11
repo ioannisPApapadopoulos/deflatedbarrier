@@ -5,19 +5,17 @@ from .deflation import newton
 from .compatibility import make_comm
 from .misc import create_output_folder, inertia_switch, report_profile, MorYos
 from .visolvers import BensonMunson, HintermullerItoKunisch, ProjectedNewton
-# from .mg import create_dm # Can crash with depending on Ubuntu version
+# from .mg import create_dm # Can crash depending on Ubuntu version
 from mpi4py import MPI
 from copy import deepcopy
 import os
 import resource
 import shutil
 
-
 def deflatedbarrier(problem, params=None, solver = "BensonMunson",
                   comm=MPI.COMM_WORLD, mu_start=1000,
                   mu_end = 1e-15, hint=None,
                   max_halfstep = 1, initialstring=None):
-
     # inelegant ways of trying to make the output folder...
     create_output_folder()
     #  Overload problem classes e.g. if we wish to use Hintermuller-Ito-Kunisch primal-dual active set strategy
@@ -89,7 +87,7 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
         # the branch to be deflated from in DeflationTask
         branch_deflate = branch_deflate_start
 
-        solutionpath_string = ("output/mu-%.3e-params-%s-mesh-%1.2f" %(float(mu),params,hmin))
+        solutionpath_string = ("output/mu-%.3e-params-%s-hmin-%.3e" %(float(mu),params,hmin))
         pvd = File("%s/solutions.pvd" %solutionpath_string)
 
         max_solutions = problem.number_solutions(mu, params)
@@ -147,8 +145,8 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
         save.write( "NaN," + str(Log["mus"])[1:-1] )
         save.close()
 
-    report_profile(Log, Max_solutions)
-    return [guesses,Log["solutions_cost"]]
+    out = report_profile(Log, Max_solutions)
+    return (guesses, out)
 
 def initialise_guess(guesses,Max_solutions,found_solutions, V, params):
     number_initial_branches = len(guesses)
@@ -311,7 +309,7 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
         rho = split(u)[0]
         infeasibility_rho = assemble(rho*dx)/assemble(Constant(1.0)*dx(mesh))
 
-        if infeasibility_rho > problem.volume_constraint()+1e-4:
+        if infeasibility_rho > problem.volume_constraint(params)+1e-4:
             found_solutions[branch] = 0
 
             lmbda = split(u)[-1]
@@ -324,8 +322,8 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
 
             guesses[branch].assign(u)
 
-            problem.save_pvd(pvd, u)
-            problem.save_solution(mesh, u, mu, params, iter_subproblem, branch)
+            problem.save_pvd(pvd, u, mu)
+            problem.save_solution(mesh, u, mu, params, iter_subproblem, branch, solutionpath_string)
 
             if float(mu) == 0.0:
                 rho = split(u)[0]
