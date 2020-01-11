@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from dolfin import *
 from deflatedbarrier import *
-
+from petsc4py import PETSc
 """
 Five-holes double-pipe example.
 
@@ -112,10 +112,10 @@ class BorrvallProblem(PrimalInteriorPoint):
         PETScOptions.set("mat_mumps_icntl_14", "1000")
         solver_params = {"nonlinear_solver": "snes"}
         # Compatibility issues
-        if float(platform.linux_distribution()[1]) > 19:
-            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             PETScOptions.set("pc_factor_mat_solver_package", "mumps")
+        else:
+            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
 
         solve(F == 0, g, self.Gbcs, solver_parameters = solver_params)
         print("Initial guess computed, projecting ...")
@@ -198,7 +198,7 @@ class BorrvallProblem(PrimalInteriorPoint):
         ub = interpolate(Constant((1.0,+inf, +inf,+inf, +inf, +inf,  +inf, +inf)), Z)
         return (lb, ub)
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):

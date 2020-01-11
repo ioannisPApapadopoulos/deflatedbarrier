@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 from dolfin import *
 from deflatedbarrier import *
-import platform
+from petsc4py import PETSc
 
 """
 MBB beam example, 2 minimizers found
 """
-delta = 3.0 # aspect ratio
-N = 50  # mesh resolution
 
 class South(SubDomain):
     def inside(self, x, on_boundary):
-        return ((x[1] == 0.0)  and (x[0] >=  delta - 0.1) and on_boundary)
+        return ((x[1] == 0.0)  and (x[0] >=  2.9) and on_boundary)
 
 class West(SubDomain):
     def inside(self, x, on_boundary):
@@ -23,7 +21,7 @@ class North(SubDomain):
 
 class MBBProblem(PrimalInteriorPoint):
     def mesh(self, comm):
-        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(delta, 1.0), int(delta*N),N)
+        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(3.0, 1.0), int(3*50),50)
         return mesh
 
     def boundary_ds(self, mesh):
@@ -117,7 +115,7 @@ class MBBProblem(PrimalInteriorPoint):
         print("Computing initial guess.")
         (gamma, p, eps, f, mu_lame, lmbda_lame, epsilon) = params
         f = Constant((0,f))
-        V = self.volume_constraint()
+        V = self.volume_constraint(params)
         rho_guess =Constant(V)
         u_guess = Constant(V)
 
@@ -135,10 +133,10 @@ class MBBProblem(PrimalInteriorPoint):
         PETScOptions.set("pc_type", "lu")
         PETScOptions.set("mat_mumps_icntl_14", "1000")
         solver_params = {"nonlinear_solver": "snes"}
-        if float(platform.linux_distribution()[1]) > 19:
-            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             PETScOptions.set("pc_factor_mat_solver_package", "mumps")
+        else:
+            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
 
 
         solve(F == 0, u, self.Gbcs, solver_parameters=solver_params)
@@ -154,11 +152,7 @@ class MBBProblem(PrimalInteriorPoint):
         return [z]
 
     def number_solutions(self, mu, params):
-        # 0.07
-        # found 0.157
-        if 0.12< float(mu) < 0.25:
-            return 2
-        elif float(mu) < 0.12:
+        if float(mu) < 0.17:
             return 2
         else: return 1
 
@@ -220,11 +214,11 @@ class MBBProblem(PrimalInteriorPoint):
         return (lb, ub)
 
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):
-        # rules of IPOPT DOI: 10.1007/s10107-004-0559-y
+
         if float(mu) > 1.0:
             k_mu = 0.5
         elif 0.2 < float(mu) <= 1.0:
@@ -234,8 +228,6 @@ class MBBProblem(PrimalInteriorPoint):
 
         theta_mu = 1.05
         next_mu = min(k_mu*mu, mu**theta_mu)
-
-
         return next_mu
 
     def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
@@ -254,19 +246,20 @@ if __name__ == "__main__":
     lmbda_lame = 2.0*lmbda*mu_lame/(lmbda + 2.0*mu_lame)
 
     epsilon = 0.11313708498984613
-    # epsilon = 0.2
     params = [0.535, 3, 0.0, -10.0, mu_lame, lmbda_lame, epsilon] #(gamma, p, eps, f, mu_lame, lmbda_lame)
     deflatedbarrier(problem, params, mu_start=50., mu_end = 1e-10, max_halfstep = 3)
 
-    # uncomment for grid-gridsequencing and continuation
-    # def parameter_update(epsilon, z):
-    #    return 0.5*epsilon
-    # gridsequencing(problem, sharpness_coefficient = 6, branches = [0],
-    #                params = params, iters_total = 3, pathfile = "output",
-    #                parameter_update = parameter_update, mu_start_continuation = 1e-5)
-    #
-    # params = [0.535, 3, 0.0, -10.0, mu_lame, lmbda_lame, epsilon] #(gamma, p, eps, f, mu_lame, lmbda_lame)
-    # gridsequencing(problem, sharpness_coefficient = 6, branches = [1],
-    #                params = params, iters_total = 3, pathfile = "output",
-    #                parameter_update = parameter_update,
-    #                mu_start_continuation = 1e-5)
+    # (un)comment out below for grid-sequencing and continuation of epsilon parameter
+    def parameter_update(epsilon, z):
+       return 0.5*epsilon
+
+    params = [0.535, 3, 0.0, -10.0, mu_lame, lmbda_lame, epsilon]
+    gridsequencing(problem, sharpness_coefficient = 6, branches = [0],
+                   params = params, iters_total = 3,
+                   parameter_update = parameter_update, mu_start_continuation = 1e-5)
+
+    params = [0.535, 3, 0.0, -10.0, mu_lame, lmbda_lame, epsilon]
+    gridsequencing(problem, sharpness_coefficient = 6, branches = [1],
+                   params = params, iters_total = 3, 
+                   parameter_update = parameter_update,
+                   mu_start_continuation = 1e-5)

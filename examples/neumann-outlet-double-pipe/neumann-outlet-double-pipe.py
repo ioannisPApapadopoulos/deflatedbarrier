@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from dolfin import *
 from deflatedbarrier import *
-import platform
+from petsc4py import PETSc
 
 """
 Implementation of the Borrvall-Petersson objective functional with a
@@ -64,7 +64,8 @@ class BorrvallProblem(PrimalInteriorPoint):
         Ge = MixedElement([Ve, Pe])
         self.G = FunctionSpace(mesh, Ge)
         self.P = FunctionSpace(mesh, Pe)
-        print("Number of degrees of pressure: ", self.P.dim())
+        self.no_dofs = Z.dim()
+        print("Number of degrees of freedom: ", self.no_dofs)
         return Z
 
 
@@ -125,10 +126,10 @@ class BorrvallProblem(PrimalInteriorPoint):
         PETScOptions.set("pc_type", "lu")
         PETScOptions.set("mat_mumps_icntl_14", "1000")
         solver_params = {"nonlinear_solver": "snes"}
-        if float(platform.linux_distribution()[1]) > 19:
-            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             PETScOptions.set("pc_factor_mat_solver_package", "mumps")
+        else:
+            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
 
         Gbcs = [DirichletBC(self.G.sub(0), self.expr, Dirichlet())]
         solve(F == 0, g, Gbcs, solver_parameters=solver_params)
@@ -213,7 +214,7 @@ class BorrvallProblem(PrimalInteriorPoint):
         return (lb, ub)
 
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):

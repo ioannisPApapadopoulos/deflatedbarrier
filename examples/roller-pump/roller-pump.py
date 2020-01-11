@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from dolfin import *
 from deflatedbarrier import *
-import platform
-
-from mshr import *
+from petsc4py import PETSc
 
 """
 Implementation of the Roller-type pump with a
@@ -56,7 +54,6 @@ class RollerPumpProblem(PrimalInteriorPoint):
         right = DirichletRoller()
         right.mark(sub_domains, 2)
 
-        self.hmin = mesh.hmin()
         print('mesh min size: %s' %mesh.hmin())
         print('mesh max size: %s' %mesh.hmax())
         return mesh
@@ -79,7 +76,9 @@ class RollerPumpProblem(PrimalInteriorPoint):
         self.Gbcs = [DirichletBC(self.G.sub(0), self.outer, Dirichlet()),
                      DirichletBC(self.G.sub(0), self.roller,DirichletRoller())]
         self.P = FunctionSpace(mesh, Pe)
-        print("Number of degrees of freedom: ", Z.dim())
+        self.hmin = mesh.hmin()
+        self.no_dofs = Z.dim()
+        print("Number of degrees of freedom: ", self.no_dofs)
         return Z
 
     def expected_inertia(self):
@@ -135,10 +134,10 @@ class RollerPumpProblem(PrimalInteriorPoint):
         PETScOptions.set("pc_type", "lu")
         PETScOptions.set("mat_mumps_icntl_14", "1000")
         solver_params = {"nonlinear_solver": "snes"}
-        if float(platform.linux_distribution()[1]) > 19:
-            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             PETScOptions.set("pc_factor_mat_solver_package", "mumps")
+        else:
+            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
 
 
         solve(F == 0, g, self.Gbcs, solver_parameters=solver_params)
@@ -165,7 +164,7 @@ class RollerPumpProblem(PrimalInteriorPoint):
         if task == 'DeflationTask':
             linesearch = "basic"
             if self.hmin > 0.02:
-                damping = 0.7
+                damping = 1.
             else:
                 damping = 0.5
             max_it = 300
@@ -215,7 +214,7 @@ class RollerPumpProblem(PrimalInteriorPoint):
         return (lb, ub)
 
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):

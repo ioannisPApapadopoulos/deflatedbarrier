@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from dolfin import *
 from deflatedbarrier import *
-import platform
+from petsc4py import PETSc
 """
 Cantilever example, fixed on LHS and force downwards on half of right hand edge.
 
@@ -116,7 +116,7 @@ class CantileverProblem(PrimalInteriorPoint):
         print("Computing initial guess.")
         (gamma, p, eps, f, mu_lame, lmbda_lame, epsilon) = params
         f = Constant((0,f))
-        V = self.volume_constraint()
+        V = self.volume_constraint(params)
         rho_guess = Constant(V) #Guess(element=self.Ce)#
 
         u_guess = Constant(V)
@@ -134,10 +134,10 @@ class CantileverProblem(PrimalInteriorPoint):
         PETScOptions.set("pc_type", "lu")
         PETScOptions.set("mat_mumps_icntl_14", "1000")
         solver_params = {"nonlinear_solver": "snes"}
-        if float(platform.linux_distribution()[1]) > 19:
-            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             PETScOptions.set("pc_factor_mat_solver_package", "mumps")
+        else:
+            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
 
 
         solve(F == 0, u, self.Gbcs, solver_parameters=solver_params)
@@ -206,7 +206,7 @@ class CantileverProblem(PrimalInteriorPoint):
         ub = interpolate(Constant((1.0,+inf, +inf, +inf)), Z)
         return (lb, ub)
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):
@@ -239,17 +239,18 @@ if __name__ == "__main__":
     params = [0.5, 3.0, 0.0, -1.0, mu_lame, lmbda_lame, epsilon] #(gamma, p, eps, f, mu_lame, lmbda_lame)
     deflatedbarrier(problem, params, mu_start=10., mu_end = 1e-10, max_halfstep = 3)
 
-    # uncomment below for grid-sequencing and continuation of epsilon parameter
-    # def parameter_update(epsilon, z):
-    #    return 0.8*epsilon
+    # (un)comment out below for grid-sequencing and continuation of epsilon parameter
+    def parameter_update(epsilon, z):
+       return 0.8*epsilon
 
-    #gridsequencing(problem, sharpness_coefficient = 6, branches = [0],
-    #               params = params, iters_total = 15, pathfile = "output",
-    #               parameter_update = parameter_update, mu_start_refine = 1e-7,
-    #               grid_refinement = 4, mu_start_continuation = 1e-5)
+    params = [0.5, 3.0, 0.0, -1.0, mu_lame, lmbda_lame, epsilon]
+    gridsequencing(problem, sharpness_coefficient = 6, branches = [0],
+                  params = params, iters_total = 15, 
+                  parameter_update = parameter_update, mu_start_refine = 1e-7,
+                  grid_refinement = 4, mu_start_continuation = 1e-5)
 
-    # params = [0.5, 3.0, 0.0, -1.0, mu_lame, lmbda_lame, epsilon] #(gamma, p, eps, f, mu_lame, lmbda_lame)
-    # gridsequencing(problem, sharpness_coefficient = 6, branches = [1],
-    #                params = params, iters_total = 15, pathfile = "output",
-    #                parameter_update = parameter_update, mu_start_refine = 1e-5,
-    #                grid_refinement = 4, mu_start_continuation = 1e-5)
+    params = [0.5, 3.0, 0.0, -1.0, mu_lame, lmbda_lame, epsilon]
+    gridsequencing(problem, sharpness_coefficient = 6, branches = [1],
+                   params = params, iters_total = 15,
+                   parameter_update = parameter_update, mu_start_refine = 1e-5,
+                   grid_refinement = 4, mu_start_continuation = 1e-5)

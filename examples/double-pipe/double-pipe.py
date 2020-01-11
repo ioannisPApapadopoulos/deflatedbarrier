@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from dolfin import *
 from deflatedbarrier import *
-import platform
+from petsc4py import PETSc
 
 """
 Implementation of the Borrvall-Petersson objective functional with a
@@ -14,7 +14,7 @@ In this example, we consider the double-pipe which has:
 """
 
 delta = 1.5 # aspect ratio
-N = 50  # mesh resolution
+N = 50  # mesh resolution # 50, 80, 100
 
 class InflowOutflow(UserExpression):
     """ This class represents the velocity boundary conditions
@@ -49,8 +49,8 @@ class BorrvallProblem(PrimalInteriorPoint):
 
         Ze = MixedElement([Ce, Ve, Pe, Re, Re])
         Z  = FunctionSpace(mesh, Ze)
-
-        print("Number of degrees of freedom: ", Z.dim())
+        self.no_dofs = Z.dim()
+        print("Number of degrees of freedom: ", self.no_dofs)
 
         # Take some data. First, BCs
         self.expr = InflowOutflow(element=Ve)
@@ -118,10 +118,10 @@ class BorrvallProblem(PrimalInteriorPoint):
         PETScOptions.set("mat_mumps_icntl_14", "1000")
         solver_params = {"nonlinear_solver": "snes"}
         # Compatibility issues
-        if float(platform.linux_distribution()[1]) > 19:
-            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             PETScOptions.set("pc_factor_mat_solver_package", "mumps")
+        else:
+            PETScOptions.set("pc_factor_mat_solver_type", "mumps")
 
         Gbcs = [DirichletBC(self.G.sub(0), self.expr, "on_boundary")]
         solve(F == 0, g, Gbcs, solver_parameters=solver_params)
@@ -193,11 +193,10 @@ class BorrvallProblem(PrimalInteriorPoint):
         ub = interpolate(Constant((1.0,+inf, +inf, +inf,  +inf, +inf)), Z)
         return (lb, ub)
 
-    def volume_constraint(self):
+    def volume_constraint(self, params):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):
-        # rules of IPOPT DOI: 10.1007/s10107-004-0559-y
         k_mu = 0.7
         theta_mu = 1.5
         next_mu = min(k_mu*mu, mu**theta_mu)
@@ -208,11 +207,11 @@ class BorrvallProblem(PrimalInteriorPoint):
 
 
 if __name__ == "__main__":
-    problem=BorrvallProblem()
+    problem = BorrvallProblem()
     params = [1.0/3, 2.5e4, 0.1] #(gamma, alphabar, q)
 
     # Using Benson-Munson solver
-    deflatedbarrier(problem, params, mu_start= 100, mu_end = 1e-5, max_halfstep =0)
+    deflatedbarrier(problem, params, mu_start= 100, mu_end = 1e-5, max_halfstep = 0)
 
     # # Using Hintermuller-Ito-Kunisch solver, comment out if wanted
     # deflatedbarrier(problem, params, solver = "HintermullerItoKunisch", mu_start= 105, mu_end = 1e-5, max_halfstep =0)
