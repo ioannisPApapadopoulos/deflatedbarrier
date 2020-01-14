@@ -6,9 +6,7 @@ from petsc4py import PETSc
 Cantilever example, fixed on LHS and force downwards on half of right hand edge.
 
 """
-
-
-delta = 1.5 # aspect ratio
+width = 1.5 # aspect ratio
 N = 25  # mesh resolution
 
 class West(SubDomain):
@@ -18,12 +16,12 @@ class West(SubDomain):
 class East(SubDomain):
     def inside(self, x, on_boundary):
         # RHS boundary between 0.25<y<0.75
-        return ( ((delta - 1e-10<= x[0] <= delta + 1e-10) and (0.1<= x[1] <= 0.2) and on_boundary) or
-                 ((delta - 1e-10<= x[0] <= delta + 1e-10) and (0.8<= x[1] <= 0.9) and on_boundary)  )
+        return ( ((width - 1e-10<= x[0] <= width + 1e-10) and (0.1<= x[1] <= 0.2) and on_boundary) or
+                 ((width - 1e-10<= x[0] <= width + 1e-10) and (0.8<= x[1] <= 0.9) and on_boundary)  )
 
 class CantileverProblem(PrimalInteriorPoint):
     def mesh(self, comm):
-        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(delta, 1.0), int(delta*N),N)
+        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(width, 1.0), int(width*N),N)
         return mesh
 
     def boundary_ds(self, mesh):
@@ -155,7 +153,7 @@ class CantileverProblem(PrimalInteriorPoint):
         return [z]
 
     def number_solutions(self, mu, params):
-        if float(mu) > 0.5:
+        if float(mu) > 5e-3:
             return 1
         else: return 2
 
@@ -176,7 +174,7 @@ class CantileverProblem(PrimalInteriorPoint):
 
         args = {
                "snes_max_it": max_it,
-               "snes_atol": 1.0e-8,
+               "snes_atol": 1.0e-9,
                "snes_rtol": 0.0,
                "snes_stol": 0.0,
                "snes_divergence_tolerance": 1.0,
@@ -191,6 +189,12 @@ class CantileverProblem(PrimalInteriorPoint):
                "mat_mumps_icntl_24": 1,
                "mat_mumps_icntl_13": 1
                }
+        # Differences in petsc4py versions gives different answers, this
+        # configuration gives the same answer
+        if PETSc.Sys.getVersion()[0:2] < (3, 10):
+            args["snes_atol"] = 1.0e-8
+        else:
+            args["snes_atol"] = 1.0e-9
         return args
 
 
@@ -245,12 +249,12 @@ if __name__ == "__main__":
 
     params = [0.5, 3.0, 0.0, -1.0, mu_lame, lmbda_lame, epsilon]
     gridsequencing(problem, sharpness_coefficient = 6, branches = [0],
-                  params = params, iters_total = 15, 
+                  params = params, iters_total = 14,
                   parameter_update = parameter_update, mu_start_refine = 1e-7,
                   grid_refinement = 4, mu_start_continuation = 1e-5)
 
     params = [0.5, 3.0, 0.0, -1.0, mu_lame, lmbda_lame, epsilon]
     gridsequencing(problem, sharpness_coefficient = 6, branches = [1],
-                   params = params, iters_total = 15,
+                   params = params, iters_total = 14,
                    parameter_update = parameter_update, mu_start_refine = 1e-5,
                    grid_refinement = 4, mu_start_continuation = 1e-5)
