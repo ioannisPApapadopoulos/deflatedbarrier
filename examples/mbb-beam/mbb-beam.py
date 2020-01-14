@@ -181,6 +181,7 @@ class MBBProblem(PrimalInteriorPoint):
                "snes_max_it": max_it,
                "snes_rtol": 0.0,
                "snes_stol": 0.0,
+               "snes_atol": 1.0e-9,
                "snes_divergence_tolerance": 1.0,
                "snes_converged_reason": None,
                "snes_monitor": None,
@@ -194,12 +195,7 @@ class MBBProblem(PrimalInteriorPoint):
                "mat_mumps_icntl_24": 1,
                "mat_mumps_icntl_13": 1
                }
-        if branch == 1:
-            args["snes_atol"] = 1.0e-7
-        else:
-            args["snes_atol"] = 1.0e-7
         return args
-
 
     def k(self, rho, params):
         (gamma, p, _, f, mu_lame, lmbda_lame, epsilon) = params
@@ -251,15 +247,16 @@ if __name__ == "__main__":
 
     # (un)comment out below for grid-sequencing and continuation of epsilon parameter
     def parameter_update(epsilon, z):
-       return 0.5*epsilon
+       return 0.7*epsilon
 
     params = [0.535, 3, 0.0, -10.0, mu_lame, lmbda_lame, epsilon]
     gridsequencing(problem, sharpness_coefficient = 6, branches = [0],
-                   params = params, iters_total = 3,
-                   parameter_update = parameter_update, mu_start_continuation = 1e-5)
+                   params = params, iters_total = 5,
+                   parameter_update = parameter_update,
+                   mu_start_continuation = 1e-5, grid_refinement = 2)
 
     params = [0.535, 3, 0.0, -10.0, mu_lame, lmbda_lame, epsilon]
     gridsequencing(problem, sharpness_coefficient = 6, branches = [1],
-                   params = params, iters_total = 3, 
+                   params = params, iters_total = 5,
                    parameter_update = parameter_update,
-                   mu_start_continuation = 1e-5)
+                   mu_start_continuation = 1e-5, grid_refinement = 2)
