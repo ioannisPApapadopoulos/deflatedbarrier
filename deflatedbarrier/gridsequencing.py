@@ -34,7 +34,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
         initialstring = pathfile + "/tmp/%s.xml.gz"%(branch)
         tmppathfile = pathfile + "/tmp"
         (F,J,bcs,sp,vi,dm,z,v,w) = requirements(mesh, gsproblem, mu, branch, params)
-        h5 = HDF5File(dolfin_comm, initialpathfile + "/mu-%.3e-params-%s-hmin-%.3e/%s.xml.gz" % (float(mu), params,mesh.hmin(),branch), "r")
+        h5 = HDF5File(dolfin_comm, initialpathfile + "/mu-%.3e-hmin-%.3e-params-%s-solver-BensonMunson/%s.xml.gz" % (float(mu), mesh.hmin(), params , branch), "r")
         h5.read(z, "/guess"); del h5
 
         epsilon = params[sharpness_coefficient]

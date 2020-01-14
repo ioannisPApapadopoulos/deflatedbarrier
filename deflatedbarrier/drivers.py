@@ -87,7 +87,7 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
         # the branch to be deflated from in DeflationTask
         branch_deflate = branch_deflate_start
 
-        solutionpath_string = ("output/mu-%.3e-params-%s-hmin-%.3e" %(float(mu),params,hmin))
+        solutionpath_string = ("output/mu-%.3e-hmin-%.3e-params-%s-solver-%s" %(float(mu),hmin,params,solver))
         pvd = File("%s/solutions.pvd" %solutionpath_string)
 
         max_solutions = problem.number_solutions(mu, params)

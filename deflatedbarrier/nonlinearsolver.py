@@ -7,7 +7,7 @@ import numpy
 from dolfin import as_backend_type, PETScVector, PETScMatrix, \
     MixedElement, VectorElement, Function, FunctionSpace, \
     SystemAssembler, Form
-import platform
+from petsc4py import PETSc
 # dolfin lacks a high-level snes frontend like Firedrake,
 # so we're going to put one here and build up what we need
 # to make things happen.
@@ -33,7 +33,7 @@ class SNUFLSolver(object):
             opts[prefix + "snes_stol"] = 0.0
 
         # No backwards compatibility in PETSc
-        if float(platform.linux_distribution()[1])> 19:
+        if PETSc.Sys.getVersion()[0:2] >= (3, 9):
             if "pc_factor_mat_solver_package" in solver_parameters:
                 opts[prefix + "pc_factor_mat_solver_type"] = solver_parameters["pc_factor_mat_solver_package"]
                 del solver_parameters["pc_factor_mat_solver_package"]
