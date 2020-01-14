@@ -137,7 +137,7 @@ class BorrvallProblem(PrimalInteriorPoint):
         print("Initial guess projected")
         return [z]
 
-    def solver_parameters(self,mu, branch, task, params):
+    def solver_parameters(self, mu, branch, task, params):
         (gamma,alphabar, q) = params
         if float(mu) < 100:
             linesearch = "l2"
@@ -212,9 +212,3 @@ if __name__ == "__main__":
 
     # Using Benson-Munson solver
     deflatedbarrier(problem, params, mu_start= 100, mu_end = 1e-5, max_halfstep = 0)
-
-    # # Using Hintermuller-Ito-Kunisch solver, comment out if wanted
-    # deflatedbarrier(problem, params, solver = "HintermullerItoKunisch", mu_start= 105, mu_end = 1e-5, max_halfstep =0)
-
-    # Grid Sequencing & parameter continuation
-    # gridsequencing(problem, sharpness_coefficient = 2, branches = [0, 1], params = params, pathfile = "output", parameter_continuation = "False")

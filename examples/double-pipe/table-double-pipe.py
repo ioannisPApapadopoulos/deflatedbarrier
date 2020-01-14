@@ -61,11 +61,57 @@ def create_table_HIK():
                     mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(1.5, 1.0), int(1.5*cell_no),cell_no)
                     self.hmin = mesh.hmin()
                     return  mesh
+
+                def solver_parameters(self, mu, branch, task, params):
+                    (gamma, alphabar, q) = params
+
+                    linesearch = "l2"
+
+                    if task == 'ContinuationTask':
+                        max_it = 500
+                        damping = 1.0
+                    elif task == 'DeflationTask':
+                        max_it = 100
+                        damping = 0.95
+                    elif task == 'PredictorTask':
+                        max_it = 20
+                        damping = 1.0
+
+                    args = {
+                           "snes_max_it": max_it,
+                           "snes_rtol": 0.0,
+                           "snes_stol": 0.0,
+                           "snes_atol": 1e-9,
+                           "snes_divergence_tolerance": 1.0e10,
+                           "snes_converged_reason": None,
+                           "snes_monitor": None,
+                           "snes_linesearch_type": linesearch,
+                           "snes_linesearch_maxstep": 1.0,
+                           "snes_linesearch_damping": damping,
+                           "snes_linesearch_monitor": None,
+                           "ksp_type": "preonly",
+                           "pc_type": "lu",
+                           "pc_factor_mat_solver_type": "mumps",
+                           "mat_mumps_icntl_24": 1,
+                           "mat_mumps_icntl_13": 1,
+                           "mat_mumps_icntl_14": 1000,
+                           }
+                    return args
+
+                def update_mu(self, u, mu, iters, k, k_mu_old, params):
+                    k_mu = 0.8
+                    theta_mu = 1.15
+                    next_mu = min(k_mu*mu, mu**theta_mu)
+                    return next_mu
+
+                def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
+                    return nothing(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
+
                 def __getattr__(self, attr):
                     return getattr(problem, attr)
 
             newproblem = DoublePipe()
-            (_, out) = deflatedbarrier(newproblem, solver = "HintermullerItoKunisch", params, mu_start= 100, mu_end = 1e-5, max_halfstep = 0)
+            (_, out) = deflatedbarrier(newproblem, params, solver = "HintermullerItoKunisch", mu_start= 105, mu_end = 1e-5, max_halfstep = 1)
             out = np.append(["%.4f"%newproblem.hmin,"%d"%newproblem.no_dofs], out)
             table = np.append(table, [out], axis = 0)
 
@@ -79,7 +125,7 @@ def create_table_HIK():
         plt.tick_params(axis='y', which='both', right=False, left=False, labelleft=False)
         for pos in ['right','top','bottom','left']:
             plt.gca().spines[pos].set_visible(False)
-        plt.xlabel(r"BM solver iterations for the double-pipe problem", fontsize = 30)
+        plt.xlabel(r"HIK solver iterations for the double-pipe problem", fontsize = 30)
         plt.savefig("table_HIK.pdf", bbox_inches='tight', pad_inches=0.05)
         plt.close()
 
