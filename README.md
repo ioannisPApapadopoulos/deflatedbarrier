@@ -9,7 +9,7 @@ The deflated-barrier library implements the deflated barrier method of Papadopou
 ### Dependencies ###
 
 
-The code is written in Python using FEniCS: a finite element solver platform. Instructions for set up can be found at http://fenicsproject.org/download. (version >=  2017.1.0, compiled with PETSc, petsc4py and HDF5 support).
+The code is written in Python using FEniCS: a finite element solver platform. Instructions for set up can be found at http://fenicsproject.org/download. (version 2019.1.0, compiled with PETSc, petsc4py and HDF5 support).
 
 
 The deflated-barrier library also depends on
@@ -24,7 +24,7 @@ slepc4py (https://bitbucket.org/slepc/slepc4py, for computing stabilities)
 
 ### Code examples ###
 
-Tested with dolfin version 2019.1.0 compiled with petsc4py version 3.7.0 and dolfin version 2019.1.0 compiled with petsc4py version 3.10.2
+Tested with dolfin version 2019.1.0 compiled with either petsc4py version 3.7.0 or petsc4py version 3.10.1 
 
 The easiest way to learn how to use the deflated-barrier package is to examine the examples in examples/. Start with examples/double-pipe.
 
