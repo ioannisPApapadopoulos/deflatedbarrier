@@ -44,7 +44,7 @@ class DirichletRoller(SubDomain):
 
 class RollerPumpProblem(PrimalInteriorPoint):
     def mesh(self, comm):
-        mesh = Mesh("mesh/fine.xml")
+        mesh = Mesh("mesh/coarse.xml")
 
         # Mark boundaries of pump and domain
         sub_domains = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     def parameter_update(q, z):
         return q+0.05
     gridsequencing(problem, sharpness_coefficient = 2, branches = [0],
-                   params = params, pathfile = "output",
+                   params = params, 
                    parameter_update=parameter_update,
                    iters_total = 11,
                    mu_start_continuation = 1e-5,

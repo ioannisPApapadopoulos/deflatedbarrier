@@ -13,7 +13,7 @@ In this example, we consider the double-pipe which has:
 
 """
 
-delta = 1.5 # aspect ratio
+width = 1.5 # aspect ratio
 N = 50  # mesh resolution # 50, 80, 100
 
 class InflowOutflow(UserExpression):
@@ -25,7 +25,7 @@ class InflowOutflow(UserExpression):
         l = 1.0/6.0
         gbar = 1.0
 
-        if x[0] == 0.0 or x[0] == delta:
+        if x[0] == 0.0 or x[0] == width:
             if (1.0/4 - l/2) < x[1] < (1.0/4 + l/2):
                 t = x[1] - 1.0/4
                 values[0] = gbar*(1 - (2*t/l)**2)
@@ -38,7 +38,7 @@ class InflowOutflow(UserExpression):
 
 class BorrvallProblem(PrimalInteriorPoint):
     def mesh(self, comm):
-        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(delta, 1.0), int(delta*N),N)
+        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(width, 1.0), int(width*N),N)
         return mesh
 
     def function_space(self, mesh):

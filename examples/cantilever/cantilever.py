@@ -101,12 +101,13 @@ class CantileverProblem(PrimalInteriorPoint):
         return C
 
     def boundary_conditions(self, Z, params):
-        # boundary conditions for displacement and lagrange multiplier
+        # boundary conditions for displacement
         return [DirichletBC(Z.sub(1), (0.0,0.0), West())]
 
 
     def initial_guesses(self, Z, params):
-
+        # compute an initial guess by solving the linear elasticity equation
+        # with a uniform distribution of rho = 0.5 over the whole domain
         comm = self.G.mesh().mpi_comm()
         commZ = Z.mesh().mpi_comm()
         ds = self.boundary_ds(Z.mesh())
@@ -199,6 +200,7 @@ class CantileverProblem(PrimalInteriorPoint):
 
 
     def k(self, rho, params):
+        # SIMP method
         (gamma, p, _, f, mu_lame, lmbda_lame, epsilon) = params
         eps = 1e-5
         eps = Constant(eps)
@@ -214,7 +216,6 @@ class CantileverProblem(PrimalInteriorPoint):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):
-        # rules of IPOPT DOI: 10.1007/s10107-004-0559-y
         if float(mu) > 1.0:
             k_mu = 0.8
             theta_mu = 1.5

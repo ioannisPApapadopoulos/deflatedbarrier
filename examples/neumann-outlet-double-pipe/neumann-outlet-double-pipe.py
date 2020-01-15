@@ -12,7 +12,7 @@ In this example we find 3 solutions
 
 To demonstrate the flexiblity of FEniCS, we implement Scott-Vogelius elements
 """
-delta = 1.5 # aspect ratio
+width = 1.5 # aspect ratio
 
 class InflowOutflow(UserExpression):
     def eval(self, values, x):
@@ -37,8 +37,8 @@ class Dirichlet(SubDomain):
         l = 1.0/6.0
         # Dirichlet conditions everywhere but on outlets
         return (on_boundary
-                and not (x[0] == delta and (1.0/4 - l/2) < x[1] < (1.0/4 + l/2))
-                and not (x[0] == delta and (3.0/4 - l/2) < x[1] < (3.0/4 + l/2))
+                and not (x[0] == width and (1.0/4 - l/2) < x[1] < (1.0/4 + l/2))
+                and not (x[0] == width and (3.0/4 - l/2) < x[1] < (3.0/4 + l/2))
                 )
 
 class BorrvallProblem(PrimalInteriorPoint):

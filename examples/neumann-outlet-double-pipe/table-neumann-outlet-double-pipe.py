@@ -2,8 +2,6 @@
 from dolfin import *
 from deflatedbarrier import *
 import numpy as np
-# import matplotlib
-# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -12,6 +10,11 @@ rc('text', usetex=True)
 
 doublepipe = __import__("neumann-outlet-double-pipe")
 
+"""
+This script generates a table of the number of BM solver iterations required to solve
+the neumann-outlet-double-pipe problem for varying refinements of meshes
+
+"""
 def create_table_BM():
     problem = doublepipe.BorrvallProblem()
     params = [1.0/3, 2.5e4, 0.1] #(gamma, alphabar, q)

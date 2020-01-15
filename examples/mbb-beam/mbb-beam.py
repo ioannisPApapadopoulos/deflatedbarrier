@@ -107,7 +107,8 @@ class MBBProblem(PrimalInteriorPoint):
 
 
     def initial_guesses(self, Z, params):
-
+        # compute an initial guess by solving the linear elasticity equation
+        # with a uniform distribution of rho = 0.535 over the whole domain
         comm = self.G.mesh().mpi_comm()
         commZ = Z.mesh().mpi_comm()
         ds = self.boundary_ds(Z.mesh())

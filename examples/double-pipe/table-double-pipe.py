@@ -11,6 +11,11 @@ from petsc4py import PETSc
 
 doublepipe = __import__("double-pipe")
 
+"""
+This script generates a table of the number of BM & HIK solver iterations required
+to solve the double-pipe problem for varying refinements of meshes
+
+"""
 def create_table_BM():
     problem = doublepipe.BorrvallProblem()
     params = [1.0/3, 2.5e4, 0.1] #(gamma, alphabar, q)
