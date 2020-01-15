@@ -202,7 +202,6 @@ class BorrvallProblem(PrimalInteriorPoint):
         return params[0]
 
     def update_mu(self, u, mu, iters, k, k_mu_old, params):
-        # rules of IPOPT DOI: 10.1007/s10107-004-0559-y
         if mu > 130:
             k_mu = 0.8
         else:
@@ -218,7 +217,7 @@ class BorrvallProblem(PrimalInteriorPoint):
 if __name__ == "__main__":
     problem=BorrvallProblem()
     params = [1.0/3, 2.5e4, 0.1, 1] #(gamma, alphabar, q, delta)
-    deflatedbarrier(problem, params, mu_start=200, max_halfstep = 0)
+    deflatedbarrier(problem, params, mu_start= 200, max_halfstep = 0)
 
     def parameter_update(q, z):
         return q + 0.05
@@ -236,10 +235,27 @@ if __name__ == "__main__":
             parameter_update=parameter_update, mu_start_refine = 1e-8,
             mu_start_continuation = 1e-5, grid_refinement=2)
         elif (i == 38):
+            """
+            For branch 38, we need to refine the grid twice and then perform
+            a continuation on the parameter q
+            """
             gridsequencing(problem, sharpness_coefficient = 2, branches = [i],
-            params = params, iters_total = 10,
-            parameter_update=parameter_update, mu_start_refine = 1e-8,
-            mu_start_continuation = 1e-5, grid_refinement=2)
+            params = params, iters_total = 2, mu_start_refine = 1e-5,
+            mu_start_continuation = 1e-5, grid_refinement = 2,
+            parameter_continuation = False)
+            class Branch38(object):
+                def mesh(self, comm):
+                    mesh = Mesh("gs_output/cont-0.1/branch-38/iter-1/mesh.xml")
+                    return  mesh
+                def __getattr__(self, attr):
+                    return getattr(problem, attr)
+            params = [1.0/3, 2.5e4, 0.1, 1]
+            newproblem = Branch38()
+            gridsequencing(newproblem, sharpness_coefficient = 2, branches = [i],
+            params = params, iters_total = 6,
+            parameter_update=parameter_update, mu_start_refine = 1e-5,
+            mu_start_continuation = 1e-5, grid_refinement = 0,
+            initialpathfile = "gs_output/cont-0.1/branch-38/iter-1/38.xml.gz")
         else:
             gridsequencing(problem, sharpness_coefficient = 2, branches = [i],
             params = params, iters_total = 3,
