@@ -43,7 +43,7 @@ The cantilever and mbb-beam examples (with continuation and grid-sequencing) can
 
 ### Installation ###
 
-Install package with the following command in the parent directory
+Install the package with the following command in the parent directory
 
 	pip3 install .
 
@@ -55,4 +55,6 @@ Ioannis P. A. Papadopoulos (ioannis.papadopoulos@maths.ox.ac.uk)
 Patrick E. Farrell (patrick.farrell@maths.ox.ac.uk)
 
 
-### Disclaimer ###
+### License ###
+
+GNU LGPL, version 3.
