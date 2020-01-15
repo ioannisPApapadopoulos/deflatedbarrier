@@ -23,7 +23,6 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
     mu = Constant(0.0)
     epsilon_original = params[sharpness_coefficient]
     problem = visolver(problem, "BensonMunson")
-    if initialpathfile == None: initialpathfile = "output"
     if pathfile == None: pathfile = "gs_output"
 
     for branch in branches:
@@ -34,7 +33,10 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
         initialstring = pathfile + "/tmp/%s.xml.gz"%(branch)
         tmppathfile = pathfile + "/tmp"
         (F,J,bcs,sp,vi,dm,z,v,w) = requirements(mesh, gsproblem, mu, branch, params)
-        h5 = HDF5File(dolfin_comm, initialpathfile + "/mu-%.3e-hmin-%.3e-params-%s-solver-BensonMunson/%s.xml.gz" % (float(mu), mesh.hmin(), params , branch), "r")
+        if initialpathfile == None:
+            h5 = HDF5File(dolfin_comm, "output/mu-%.3e-hmin-%.3e-params-%s-solver-BensonMunson/%s.xml.gz" % (float(mu), mesh.hmin(), params , branch), "r")
+        else:
+            h5 = HDF5File(dolfin_comm, initialpathfile, "r")
         h5.read(z, "/guess"); del h5
 
         epsilon = params[sharpness_coefficient]

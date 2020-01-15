@@ -1,4 +1,4 @@
-__version__ = "0.1"
+__version__ = "2020.0.1"
 
 from .deflation import *
 from .drivers import deflatedbarrier
