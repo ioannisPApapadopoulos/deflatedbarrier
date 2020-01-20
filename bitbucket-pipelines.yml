@@ -14,5 +14,3 @@ pipelines:
           - pip3 install --no-cache-dir .
           - cd examples/double-pipe
           - python3 test.py
-          - rm -f output
-          - rm -f gs_output

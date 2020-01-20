@@ -25,7 +25,7 @@ newproblem = DoublePipe()
 assert len(solutions) == 1
 
 def parameter_update(q, z):
-   return q + 0.05
+   return q + 0.01
 gridsequencing(newproblem,
                sharpness_coefficient = 2,
                branches = [0],
@@ -33,6 +33,6 @@ gridsequencing(newproblem,
                iters_total = 1,
                parameter_update = parameter_update,
                mu_start_continuation = 1e-5,
-               mu_start_refine = 1e-5,
+               mu_start_refine = 1e-4,
                grid_refinement = 1,
                )
