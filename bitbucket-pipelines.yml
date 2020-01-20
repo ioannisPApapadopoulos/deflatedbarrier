@@ -13,4 +13,6 @@ pipelines:
           - cd $BITBUCKET_CLONE_DIR
           - pip3 install --no-cache-dir .
           - cd examples/double-pipe
-          - python3 double-pipe.py
+          - python3 test.py
+          - rm -f output
+          - rm -f gs_output
