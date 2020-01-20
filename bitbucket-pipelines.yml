@@ -11,6 +11,6 @@ pipelines:
           - export FENICS_PYTHON_MINOR_VERSION=5
           - source /home/fenics/fenics.env.conf
           - cd $BITBUCKET_CLONE_DIR
-          - pip3 install --no-cache-dir
+          - pip3 install --no-cache-dir .
           - cd examples/double-pipe
           - python3 double-pipe.py
