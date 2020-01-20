@@ -1,4 +1,4 @@
-image: quay.io/fenicsproject
+image: quay.io/fenicsproject/dev
 
 pipelines:
   default:
