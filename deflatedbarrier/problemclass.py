@@ -5,7 +5,7 @@ from .nonlinearsolver import *
 from .nonlinearproblem import *
 from .misc import *
 from .prediction import *
-import platform
+from petsc4py import PETSc
 
 # File containing the PrimalInteriorPoint and PrimalDualInteriorPoint classes
 
@@ -110,10 +110,10 @@ class PrimalInteriorPoint(object):
         pc = PETSc.PC().create(comm)
         pc.setOperators(A.mat())
         pc.setType("cholesky")
-        if float(platform.linux_distribution()[1]) > 19:
-            pc.setFactorSolverType("mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             pc.setFactorSolverPackage("mumps")
+        else:
+            pc.setFactorSolverType("mumps")
         pc.setUp()
 
         Factor = pc.getFactorMatrix()
@@ -255,10 +255,10 @@ class PrimalDualInteriorPoint(object):
         pc = PETSc.PC().create(comm)
         pc.setOperators(A.mat())
         pc.setType("cholesky")
-        if float(platform.linux_distribution()[1]) > 19:
-            pc.setFactorSolverType("mumps")
-        else:
+        if PETSc.Sys.getVersion()[0:2] < (3, 9):
             pc.setFactorSolverPackage("mumps")
+        else:
+            pc.setFactorSolverType("mumps")
         pc.setUp()
 
         Factor = pc.getFactorMatrix()
