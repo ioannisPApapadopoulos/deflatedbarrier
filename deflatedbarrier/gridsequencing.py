@@ -15,7 +15,7 @@ import shutil
 def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfile = None,
                    initialpathfile = None, comm=MPI.COMM_WORLD,
                    mu_start_refine = 0.0, mu_start_continuation = 0.0, param_end = 5e-3,
-                   iters_total = 20, parameter_update = None,
+                   iters_total = 20, parameter_update = None, greyness_tol = 1e-1,
                    grid_refinement = 10, parameter_continuation = True):
 
 
@@ -54,7 +54,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
         while (epsilon > param_end) and (iters < iters_total):
             # shutil.rmtree(pathfile +"/tmp", ignore_errors=True)
             if gr <= grid_refinement:
-                mesh_ = interface_refine(z, mesh)
+                mesh_ = interface_refine(z, mesh, greyness_tol)
                 (_,_,_,_,_,_,z_,_,_) = requirements(mesh_, problem, mu, branch, params)
                 print('mesh size: %s' %mesh_.hmin())
             else:
@@ -115,7 +115,7 @@ def requirements(mesh, problem, mu, branch, params):
     bcs = problem.boundary_conditions(Z, params)
     return(F,J,bcs,sp,vi,dm,z,v,w)
 
-def interface_refine(z, mesh):
+def interface_refine(z, mesh, greyness_tol):
     rho = z.split(True)[0]
 
     for i in range(1):
@@ -123,7 +123,7 @@ def interface_refine(z, mesh):
         cell_markers.set_all(False)
         for cell in cells(mesh):
             p = cell.midpoint()
-            if 1e-1 < rho(p) < 1. - 1e-1:
+            if greyness_tol < rho(p) < 1. - greyness_tol:
                 cell_markers[cell] = True
         mesh = refine(mesh, cell_markers)
 
