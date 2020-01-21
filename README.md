@@ -4,7 +4,7 @@
 
 DeflAted Barrier method (DAB)
 
-The deflated-barrier library implements the deflated barrier method of Papadopoulos, Farrell and Surowiec. The objective is to compute multiple minima of topology optimization problems which are non-convex, PDE & inequality-constrained optimization problems.
+The deflated-barrier library implements the deflated barrier method of Papadopoulos, Farrell and Surowiec. The objective is to compute multiple minima of topology optimization problems which are non-convex, PDE & box-constrained optimization problems.
 
 ### Dependencies ###
 
