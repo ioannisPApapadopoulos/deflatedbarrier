@@ -164,11 +164,7 @@ class MBBProblem(PrimalInteriorPoint):
         linesearch = "l2"
         if task == 'ContinuationTask':
             max_it = 100
-            if float(mu) > 300:
-                damping = 1.0
-            else:
-                damping = 1.0
-                max_it = 100
+            damping = 1.0
         elif task == 'DeflationTask':
             linesearch = "basic"
             max_it = 300
