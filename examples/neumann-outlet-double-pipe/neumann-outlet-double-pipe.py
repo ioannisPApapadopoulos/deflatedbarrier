@@ -225,11 +225,6 @@ class BorrvallProblem(PrimalInteriorPoint):
     def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
         return feasibletangent(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
 
-    def save_pvd(self, pvd, z, mu):
-        rho_ = z.split(deepcopy=True)[0]
-        rho_.rename("Control", "Control")
-        pvd << rho_
-
 if __name__ == "__main__":
     problem=BorrvallProblem()
     params = [1.0/3, 2.5e4, 0.1] #(gamma, alphabar, q)
