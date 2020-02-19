@@ -8,11 +8,11 @@ Implementation of the Borrvall-Petersson objective functional with a
 Stokes PDE constraint. However with natural boundary conditions on the outlet
 rather than a forced Dirichlet boundary boundary_conditions
 
-In this example we find 3 solutions
+In this example we find 4 solutions
 
-To demonstrate the flexiblity of FEniCS, we implement Scott-Vogelius elements
 """
 width = 1.5 # aspect ratio
+N = 30 # 30, 40, 80
 
 class InflowOutflow(UserExpression):
     def eval(self, values, x):
@@ -43,14 +43,14 @@ class Dirichlet(SubDomain):
 
 class BorrvallProblem(PrimalInteriorPoint):
     def mesh(self, comm):
-        # Need to use barycentrically refined meshes for inf-sup stability
-        mesh = Mesh("mesh/coarse.xml")
+        mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(width, 1.0), int(width*N),N, "crossed")
+        print("mesh %s"%mesh.hmin())
         return mesh
 
     def function_space(self, mesh):
-        # Scott-Vogelius FEM
+
         Ve = VectorElement("CG", mesh.ufl_cell(), 2) # velocity
-        Pe = FiniteElement("DG", mesh.ufl_cell(), 1) # pressure
+        Pe = FiniteElement("CG", mesh.ufl_cell(), 1) # pressure
         Ce = FiniteElement("CG", mesh.ufl_cell(), 1) # control
         Re = FiniteElement("R",  mesh.ufl_cell(), 0) # reals
 
@@ -93,7 +93,7 @@ class BorrvallProblem(PrimalInteriorPoint):
         rho, u, p, lmbda = split(z)
         L = (
               # evaluate cost of Borrvall-Petersson functional
-              0.5 * inner(grad(u), grad(u))*dx
+              inner(self.symgrad(u), self.symgrad(u))*dx
             + 0.5 * self.alpha(rho, params) * inner(u, u)*dx
             )
         C = assemble(L)
@@ -146,11 +146,9 @@ class BorrvallProblem(PrimalInteriorPoint):
         return [z]
 
     def number_solutions(self, mu, params):
-        if float(mu) > 130:
+        if float(mu) > 90:
             return 1
-        elif 40 < float(mu) < 130:
-            return 2
-        else: return 3
+        return 4
 
 
     def solver_parameters(self,mu, branch, task, params):
@@ -165,7 +163,7 @@ class BorrvallProblem(PrimalInteriorPoint):
             damping = 1.0
         elif task == 'DeflationTask':
             linesearch = "basic"
-            max_it = 200
+            max_it = 300
             damping = 0.9
         elif task == 'PredictorTask':
             max_it = 20
@@ -227,6 +225,10 @@ class BorrvallProblem(PrimalInteriorPoint):
     def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
         return feasibletangent(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
 
+    def save_pvd(self, pvd, z, mu):
+        rho_ = z.split(deepcopy=True)[0]
+        rho_.rename("Control", "Control")
+        pvd << rho_
 
 if __name__ == "__main__":
     problem=BorrvallProblem()
