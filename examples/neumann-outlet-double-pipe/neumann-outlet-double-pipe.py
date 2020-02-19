@@ -6,7 +6,7 @@ from petsc4py import PETSc
 """
 Implementation of the Borrvall-Petersson objective functional with a
 Stokes PDE constraint. However with natural boundary conditions on the outlet
-rather than a forced Dirichlet boundary boundary_conditions
+rather than a forced Dirichlet boundary conditions
 
 In this example we find 4 solutions
 
