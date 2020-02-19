@@ -28,6 +28,8 @@ def create_table_BM():
                 mesh = RectangleMesh(comm, Point(0.0, 0.0), Point(1.5, 1.0), int(1.5*cell_no),cell_no)
                 self.hmin = mesh.hmin()
                 return  mesh
+            def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
+                return tangent(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
             def __getattr__(self, attr):
                 return getattr(problem, attr)
 
@@ -110,7 +112,7 @@ def create_table_HIK():
                     return next_mu
 
                 def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
-                    return nothing(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
+                    return tangent(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
 
                 def __getattr__(self, attr):
                     return getattr(problem, attr)
@@ -166,6 +168,9 @@ def create_table_BM_SV():
                 doublepipe.BorrvallProblem.G = FunctionSpace(mesh, Ge)
                 doublepipe.BorrvallProblem.P = FunctionSpace(mesh, Pe)
                 return Z
+
+            def predictor(self, problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint=None):
+                return tangent(problem, solution, test, trial, oldmu, newmu, k, params, vi, task, hint)
 
             def __getattr__(self, attr):
                 return getattr(problem, attr)
