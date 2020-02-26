@@ -55,7 +55,6 @@ class CantileverProblem(PrimalInteriorPoint):
         u.assign(Constant((1.0,1.0)))
         [bc.apply(u.vector()) for bc in self.Gbcs]
         dofs = len(where(u.vector()==0.0)[0])
-        print(dofs)
         expected -= dofs        # velocity multiplier boundary conditions contribution
         return expected
 
