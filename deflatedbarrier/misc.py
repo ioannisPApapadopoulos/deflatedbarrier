@@ -16,18 +16,18 @@ def plus(x):
 def MorYos(x):
     return conditional(gt(x, 0), 0, x**2)
 
-def create_output_folder():
+def create_output_folder(saving_folder):
     if sys.version_info[0] < 3:
         try:
-            os.removedirs("output")
+            os.removedirs(saving_folder + "output")
         except:
             pass
         try:
-            os.makedirs("output")
+            os.makedirs(saving_folder + "output")
         except:
             pass
     else:
-        os.makedirs("output", exist_ok=True)
+        os.makedirs(saving_folder + "output", exist_ok=True)
     return None
 
 def inertia_switch(inertia, inertia_old, max_solutions, Max_solutions, branches, branch):
