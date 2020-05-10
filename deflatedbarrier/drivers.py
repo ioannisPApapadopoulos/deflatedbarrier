@@ -15,9 +15,10 @@ import shutil
 def deflatedbarrier(problem, params=None, solver = "BensonMunson",
                   comm=MPI.COMM_WORLD, mu_start=1000,
                   mu_end = 1e-15, hint=None,
-                  max_halfstep = 1, initialstring=None):
+                  max_halfstep = 1, initialstring=None,
+                  check_volume_constraint = True, saving_folder = ""):
     # inelegant ways of trying to make the output folder...
-    create_output_folder()
+    create_output_folder(saving_folder)
     #  Overload problem classes e.g. if we wish to use Hintermuller-Ito-Kunisch primal-dual active set strategy
     problem = visolver(problem, solver)
 
@@ -87,7 +88,7 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
         # the branch to be deflated from in DeflationTask
         branch_deflate = branch_deflate_start
 
-        solutionpath_string = ("output/mu-%.3e-hmin-%.3e-params-%s-solver-%s" %(float(mu),hmin,params,solver))
+        solutionpath_string = (saving_folder + "output/mu-%.12e-hmin-%.3e-params-%s-solver-%s" %(float(mu),hmin,params,solver))
         pvd = File("%s/solutions.pvd" %solutionpath_string)
 
         max_solutions = problem.number_solutions(mu, params)
@@ -106,7 +107,8 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
                                                       hint_guess, hint, guesses,
                                                       mu, oldmu, oldguesses, found_solutions, solutions,
                                                       pvd, inertia, inertia_old,
-                                                      max_solutions, Max_solutions, halfmu, num_halfstep, max_halfstep, Log)
+                                                      max_solutions, Max_solutions, halfmu, num_halfstep, max_halfstep, Log,
+                                                      check_volume_constraint)
 
 
              (branch_iter, branch_deflate, mu, oldmu, oldguesses, Log, found_solutions,
@@ -136,7 +138,7 @@ def deflatedbarrier(problem, params=None, solver = "BensonMunson",
 
         # Live simplistic tracking of data
         Log["mus"].append(float(mu))
-        save = open("output/DABlog.txt","w")
+        save = open(saving_folder + "output/DABlog.txt","w")
         for i in range(Max_solutions):
             save.write( "%s,"%i+str(Log["solutions_cost"][i])[1:-1] +"\n" )
         # save.write( str(Log["num_snes_its"]) )
@@ -230,7 +232,8 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
                                          hint_guess, hint, guesses,
                                          mu, oldmu, oldguesses, found_solutions, solutions,
                                          pvd, inertia, inertia_old,
-                                         max_solutions, Max_solutions, halfmu, num_halfstep,max_halfstep, Log):
+                                         max_solutions, Max_solutions, halfmu, num_halfstep,max_halfstep, Log,
+                                         check_volume_constraint):
 
     def outputargs():
         return (branch_iter, branch_deflate, mu, oldmu, oldguesses, Log, found_solutions,
@@ -309,7 +312,7 @@ def PredictionCorrectionDeflation(iter_subproblem, problem, FcnSpace, mesh,
         rho = split(u)[0]
         infeasibility_rho = assemble(rho*dx)/assemble(Constant(1.0)*dx(mesh))
 
-        if infeasibility_rho > problem.volume_constraint(params)+1e-4:
+        if check_volume_constraint and (infeasibility_rho > problem.volume_constraint(params)+1e-4):
             found_solutions[branch] = 0
 
             lmbda = split(u)[-1]
