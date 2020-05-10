@@ -14,7 +14,7 @@ import shutil
 
 def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfile = None,
                    initialpathfile = None, comm=MPI.COMM_WORLD,
-                   mu_start_refine = 0.0, mu_start_continuation = 0.0, param_end = 5e-3,
+                   mu_start_refine = 0.0, mu_start_continuation = 0.0,
                    iters_total = 20, parameter_update = None, greyness_tol = 1e-1,
                    grid_refinement = 10, parameter_continuation = True):
 
@@ -34,7 +34,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
         tmppathfile = pathfile + "/tmp"
         (F,J,bcs,sp,vi,dm,z,v,w) = requirements(mesh, gsproblem, mu, branch, params)
         if initialpathfile == None:
-            h5 = HDF5File(dolfin_comm, "output/mu-%.3e-hmin-%.3e-params-%s-solver-BensonMunson/%s.xml.gz" % (float(mu), mesh.hmin(), params , branch), "r")
+            h5 = HDF5File(dolfin_comm, "output/mu-%.12e-hmin-%.3e-params-%s-solver-BensonMunson/%s.xml.gz" % (float(mu), mesh.hmin(), params , branch), "r")
         else:
             h5 = HDF5File(dolfin_comm, initialpathfile, "r")
         h5.read(z, "/guess"); del h5
@@ -51,7 +51,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
 
         iters = 0
         gr = 1
-        while (epsilon > param_end) and (iters < iters_total):
+        while (iters < iters_total):
             # shutil.rmtree(pathfile +"/tmp", ignore_errors=True)
             if gr <= grid_refinement:
                 mesh_ = interface_refine(z, mesh, greyness_tol)
@@ -72,7 +72,7 @@ def gridsequencing(problem, sharpness_coefficient, branches, params=None, pathfi
                 exists = os.path.isfile(tmppathfile +"/%s.xml.gz"%branch)
                 if exists: os.remove(tmppathfile +"/%s.xml.gz"%branch)
                 problem.save_solution(mesh_,z_,mu,params,0,branch,tmppathfile)
-                ([z_],_) = deflatedbarrier(gsproblem, params, mu_start=mu_start_refine, mu_end = 1e-10, max_halfstep = 0, initialstring = initialstring)
+                ([z_],_) = deflatedbarrier(gsproblem, params, mu_start=mu_start_refine, mu_end = 1e-10, max_halfstep = 1, initialstring = initialstring)
                 save_pvd(pvd, z_, mu)
             # newton(F, J, z_, bcs, params, sp, None, None, None, vi)
 
