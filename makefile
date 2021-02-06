@@ -10,3 +10,13 @@ iterationtables:
 
 fiveholes:
 	cd examples/five-holes && python3 five-holes.py
+
+convergence-plots:
+	if [ ! -d "examples/convergence-plots/deflatedbarrier-data" ]; then \
+        cd examples/convergence-plots && git clone https://papadopoulos@bitbucket.org/papadopoulos/deflatedbarrier-data.git; fi
+	cd examples/convergence-plots/double-pipe/unstructured-mesh && python3 convergence-plots.py
+	cd examples/convergence-plots/discontinuous-forcing/material-distribution-DG0 && python3 convergence-plots.py
+
+data-download:
+	if [ ! -d "examples/convergence-plots/deflatedbarrier-data" ]; then \
+        cd examples/convergence-plots && git clone https://papadopoulos@bitbucket.org/papadopoulos/deflatedbarrier-data.git; fi

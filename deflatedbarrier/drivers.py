@@ -446,7 +446,7 @@ def UpdateSubproblemParams(oldguesses, guesses, Max_solutions,
                     hint[branch] = [Function(FcnSpace), 0.0]
                 hint[branch][0].assign(hint_guess[branch][0])
                 hint[branch][1] = deepcopy(hint_guess[branch][1])
-        k_mu_old = float(mu)/float(oldmu) if iter_subproblem>1 else "NaN"
+        k_mu_old = float(mu)/float(oldmu) if (iter_subproblem>1 and float(oldmu) != 0.) else "NaN"
         oldmu.assign(mu)
         if float(mu) > 0.0:
             mu.assign(problem.update_mu(u, float(mu), min(Log["num_snes_its"]), iter_subproblem, k_mu_old, params))
