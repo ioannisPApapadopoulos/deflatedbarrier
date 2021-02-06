@@ -6,6 +6,7 @@ DeflAted Barrier method (DAB)
 
 The deflated-barrier library implements the deflated barrier method of Papadopoulos, Farrell and Surowiec. The objective is to compute multiple solutions of topology optimization problems which are nonconvex, PDE & box-constrained optimization problems.
 
+I. P. A. Papadopoulos, P. E. Farrell, T. M. Surowiec, Computing multiple solutions of topology optimization problems, to appear in SIAM Journal on Scientific Computing, 2021.
 ### Dependencies ###
 
 
@@ -44,7 +45,7 @@ The convergence plots found in "Numerical analysis of a topology optimization pr
  
 	make convergence-plots
 
-The outputs are pdf documents found in the figures/ subdirectory within examples/convergence-plots/double-pipe and examples/convergence-plots/discontinuous-forcing
+The outputs are pdf documents found in the figures/ subdirectory within examples/convergence-plots/double-pipe/unstructured-mesh and examples/convergence-plots/discontinuous-forcing/material-distribution-DG0
 
 ### Installation ###
 
