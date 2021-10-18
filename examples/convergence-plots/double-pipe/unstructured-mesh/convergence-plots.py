@@ -123,7 +123,7 @@ p_02 = p_0[sub02]
 rho_01 = rho_0[sub01]
 rho_02 = rho_0[sub02]
 
-sub11 = [0,1,3,4,6,8,10] 
+sub11 = [0,1,3,4,6,8,10]
 sub12 = []
 u_11 = u_1[sub11]
 u_12 = u_1[sub12]
@@ -145,7 +145,7 @@ plt.legend(loc = 0)
 plt.title(r"$H^1(\Omega)$-norm error of the velocity", fontsize = 20)
 plt.xlabel(r"$h$", fontsize = 20)
 plt.ylabel(r"$\|u - u_h\|_{H^1(\Omega)}$", fontsize = 20)
-plt.xticks([5e-2,1e-2], fontsize = 15)
+plt.xticks([5e-3, 1e-2,5e-2], [r"$5\times 10^{-3}$", r"$10^{-2}$", r"$5\times 10^{-2}$"], fontsize = 15)
 plt.yticks(fontsize = 15)
 plt.savefig('figures/errorplot_u.pdf', bbox_inches = "tight", pad_inches=0.05)
 plt.close()
@@ -161,7 +161,7 @@ plt.legend(loc = 0)
 plt.title(r"$L^2(\Omega)$-norm error of the velocity", fontsize = 20)
 plt.xlabel(r"$h$", fontsize = 20)
 plt.ylabel(r"$\|u - u_h\|_{L^2(\Omega)}$", fontsize = 20)
-plt.xticks([5e-2,1e-2], fontsize = 15)
+plt.xticks([5e-3, 1e-2,5e-2], [r"$5\times 10^{-3}$", r"$10^{-2}$", r"$5\times 10^{-2}$"], fontsize = 15)
 plt.yticks(fontsize = 15)
 plt.savefig('figures/errorplot_u_l2.pdf', bbox_inches = "tight", pad_inches=0.05)
 plt.close()
@@ -176,7 +176,7 @@ plt.legend(loc = 0)
 plt.title(r"$L^2(\Omega)$-norm error of the material distribution", fontsize = 20)
 plt.xlabel(r"$h$", fontsize = 20)
 plt.ylabel(r"$\|\rho - \rho_h\|_{L^2(\Omega)}$", fontsize = 20)
-plt.xticks([5e-2,1e-2], fontsize = 15)
+plt.xticks([5e-3, 1e-2,5e-2], [r"$5\times 10^{-3}$", r"$10^{-2}$", r"$5\times 10^{-2}$"], fontsize = 15)
 plt.yticks(fontsize = 15)
 plt.savefig('figures/errorplot_rho.pdf', bbox_inches = "tight", pad_inches=0.05)
 plt.close()
@@ -191,7 +191,7 @@ plt.legend(loc = 0)
 plt.title(r"$L^2(\Omega)$-norm error of the pressure", fontsize = 20)
 plt.xlabel(r"$h$", fontsize = 20)
 plt.ylabel(r"$\|p - p_h\|_{L^2(\Omega)}$", fontsize = 20)
-plt.xticks([5e-2,1e-2], fontsize = 15)
+plt.xticks([5e-3, 1e-2,5e-2], [r"$5\times 10^{-3}$", r"$10^{-2}$", r"$5\times 10^{-2}$"], fontsize = 15)
 plt.yticks(fontsize = 15)
 plt.savefig('figures/errorplot_p.pdf', bbox_inches = "tight", pad_inches=0.05)
 plt.close()
