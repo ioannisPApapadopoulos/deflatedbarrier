@@ -34,7 +34,7 @@ def compute_tau(deflation, state, update_p, vi_inact):
         Edy = getEdy(deflation, state, update_p, vi_inact)
 
         minv = 1.0 / deflation.evaluate(state)
-        tau = (1 + minv*Edy/(1 - minv*Edy))
+        tau = 1/(1 - minv*Edy)
         return tau
     else:
         return 1
